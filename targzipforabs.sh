@@ -7,6 +7,8 @@
 VER=`grep pkgver PKGBUILD | head -n1 | sed 's/ *$//g' | awk -F '=' '{print $2}'`
 PKG=`grep pkgname PKGBUILD | head -n1 | sed 's/ *$//g' | awk -F '=' '{print $2}'`
 mkdir -p archive
-tar --exclude "./archive" --exclude "./.git" --exclude "./nbproject" --exclude $0 -cvf ./archive/${PKG}_v${VER}.tar .
-gzip ./archive/$PKG_v$VER.tar
+tar --exclude "./archive" --exclude "./.git" --exclude "./nbproject" --exclude $0 --exclude 'PKGBUILD' --exclude '${PKG}.install' -cvf ./archive/${PKG}_v${VER}.tar .
+gzip ./archive/${PKG}_v${VER}.tar
 ls -lrt ./archive
+sha256sum ./archive/${PKG}_v${VER}.tar.gz
+

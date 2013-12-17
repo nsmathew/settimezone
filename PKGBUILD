@@ -10,17 +10,18 @@ url="https://github.com/nsmathew/SetTimeZone"
 license=('GPL3')
 depends=('python')
 makedepends=('git')
-md5sums=()
 install=$pkgname.install
-sha256sums
-_gitroot="https://github.com/nsmathew/SetTimeZone.git"
-_gitname="settimezone"
-
+source=("https://github.com/nsmathew/SetTimeZone/tree/master/archive/${pkgname}_v${pkgver}.tar.gz")
+sha256sums=('fa0e4429889822f881f75f43de6a760aede41f9a259d913fdc2ad0e1f80dd5f2')
+#_gitroot="https://github.com/nsmathew/SetTimeZone.git"
+#_gitname="settimezone"
+msg $source
 build() {
-        cd ${srcdir}
-        rm -rf SetTimeZone
-        msg "Connecting to GIT server..."
-        git clone ${_gitroot}
+        msg $source
+        #cd ${srcdir}
+        #rm -rf SetTimeZone
+        #msg "Connecting to GIT server..."
+        #git clone ${_gitroot}
         msg "GIT checkout done or server timeout"
 }
 
