@@ -11,7 +11,8 @@ license=('GPL3')
 depends=('python')
 makedepends=('git')
 md5sums=()
-install('settimezone.install)
+install=$pkgname.install
+sha256sums
 _gitroot="https://github.com/nsmathew/SetTimeZone.git"
 _gitname="settimezone"
 
