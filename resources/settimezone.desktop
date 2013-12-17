@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=SetTimeZone
+Comment=Access the Internet
+Exec=settimezone
+Terminal=false
+Icon=settimezone
+Type=Application
+Categories=Utilities
