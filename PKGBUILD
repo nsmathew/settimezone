@@ -36,7 +36,7 @@ package() {
         install -D -m644 SetTimeZone/resources/settimezone48x48.png ${pkgdir}/usr/share/icons/hicolor/48x48/apps/settimezone.png
         install -D -m644 SetTimeZone/resources/settimezone.desktop ${pkgdir}/usr/share/applications/settimezone.desktop
 
-        gtk-update-icon-cache -q -t -f usr/share/icons/hicolor
+        gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor
          update-desktop-database -q
 }
 
