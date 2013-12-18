@@ -31,8 +31,6 @@ build() {
 package() {
         msg "Starting package building"
         cd ${srcdir}/
-        msg $srcdir
-        msg $pkgdir
         install -D -m755 ${pkgname}/src/settimezone.py ${pkgdir}/usr/bin/settimezone || return 1
         install -D -m644 ${pkgname}/COPYING ${pkgdir}/usr/share/licenses/settimezone/COPYING
         
