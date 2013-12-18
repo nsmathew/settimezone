@@ -6,4 +6,4 @@ Exec=settimezone
 Terminal=false
 Icon=settimezone
 Type=Application
-Categories=Utilities;
+Categories=Utility;
