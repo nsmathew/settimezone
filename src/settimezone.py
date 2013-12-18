@@ -3,6 +3,7 @@
 #Application to change the timezone in Arch Linux.
 #
 #Copyright 2013 Nitin Mathew <nitn_mathew2000@hotmail.com>
+#
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +28,10 @@ class ApplicationSetTimeZone(tk.Frame):
     #Declare paths
     ZONEINFO_PATH="/usr/share/zoneinfo/"
     LOCALTIME_PATH="/etc/localtime"
-    #List fo zones
+    #List of zones
     zonelist=None
+    #list index for searching
+    search_list_index=None
     #Declare widgets
     statusbar_label=None
     info_label=None
@@ -45,8 +48,11 @@ class ApplicationSetTimeZone(tk.Frame):
         self.create_widgets()
         self.populate_list()
         self.update_statusbar()
+    
+    #Create widgets     
     def create_widgets(self):
         logging.debug("Inside create_widgets")
+        
         #Info Label
         self.info_label=tk.Label(self, text="Choose TimeZone:", takefocus=0)
         self.info_label.grid(row=0,column=0, columnspan=2, sticky="ew")
@@ -54,6 +60,7 @@ class ApplicationSetTimeZone(tk.Frame):
         #Timezone list
         self.zoneinfo_list = tk.Listbox(self, selectmode="single", height=15, width=30)
         self.zoneinfo_list.grid(row=1, column=0, padx=5)
+        self.zoneinfo_list.bind('<<ListboxSelect>>',self.list_item_selected)
         
         #Scrollbar for timezone list 
         self.y_scrollbar_zoneinfo_list = tk.Scrollbar(self,command=self.zoneinfo_list.yview, orient="vertical", takefocus=0)
@@ -65,7 +72,7 @@ class ApplicationSetTimeZone(tk.Frame):
         self.search_label.grid(row=2, column=0, sticky="w",pady=1)
         
         #Search text box
-        self.search_entry=tk.Entry(self, bg="white", width=24)
+        self.search_entry=tk.Entry(self, text="search", bg="white", width=24)
         self.search_entry.grid(row=2, column=0,sticky='e',pady=1)
         self.search_entry.bind('<Return>', self.search_zone)
             
@@ -81,6 +88,7 @@ class ApplicationSetTimeZone(tk.Frame):
         self.statusbar_label=tk.Label(self, text="", bd=2, relief="ridge", anchor="w", takefocus=0)
         self.statusbar_label.grid(row=4,column=0, columnspan=3, sticky="ew" )
         
+        #Exit application using Escape
         root.bind('<Escape>',self.exit_app)
         
         logging.debug("Widget creation is complete")
@@ -97,9 +105,14 @@ class ApplicationSetTimeZone(tk.Frame):
             for zone in self.zonelist:
                 self.zoneinfo_list.insert("end", zone)
             self.zoneinfo_list.selection_set(first=0)
+            self.zoneinfo_list.event_generate('<<ListboxSelect>>')
         except:    
              self.general_exception_handler()
     
+    #Update index used by search tool when selection is changed
+    def list_item_selected(self, event):
+        self.search_list_index=self.zoneinfo_list.curselection()[0]
+        
     #Contains the logic to change the timezone based on what user has selected
     def change_timezone(self):
         logging.debug("Inside change_timezone")
@@ -166,19 +179,34 @@ class ApplicationSetTimeZone(tk.Frame):
         except:
             self.general_exception_handler()
     
+    #Search for timezones. Current searched position is kept track using an index.
+    #This is incremented when a successful search happens.
+    #If nothing is found then start from 0 and do one more run if search started from a non-zero position
     def search_zone(self, event):
         search_str=self.search_entry.get()
         if search_str=="":
             return
-        for item in self.zonelist:
-            if search_str in item:
+        for item in self.zonelist[self.search_list_index:]:
+            if search_str.upper() in item.upper():
+                self.zoneinfo_list.selection_clear(0,"end")
+                self.zoneinfo_list.selection_set(first=self.zonelist.index(item))
+                self.zoneinfo_list.see(self.zonelist.index(item))
+                self.zoneinfo_list.event_generate('<<ListboxSelect>>')
+                self.search_list_index=self.search_list_index+1
+                logging.debug("Search term '%s' found", search_str)
+                return
+        self.search_list_index=0
+        for item in self.zonelist[self.search_list_index:]:
+            if search_str.upper() in item.upper():
                 self.zoneinfo_list.selection_clear(0,self.zoneinfo_list.size())
                 self.zoneinfo_list.selection_set(first=self.zonelist.index(item))
                 self.zoneinfo_list.see(self.zonelist.index(item))
-                self.zoneinfo_list.focus_set()
-                logging.debug("Search term '%s' found", search_str)
+                self.zoneinfo_list.event_generate('<<ListboxSelect>>')
+                self.search_list_index=self.search_list_index+1
+                logging.debug("Search term '%s' found(restart section)", search_str)
                 return
         logging.debug("Search term '%s' not found", search_str)
+        messagebox.showinfo("Error", "'"+search_str+"' not found")
         self.search_entry.selection_range(0, "end")
                 
     #Exit application
