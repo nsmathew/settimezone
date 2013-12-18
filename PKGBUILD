@@ -20,16 +20,10 @@ pkgver() {
   git describe --long | sed -E 's/([^-]*-g)/r\1/;s/-/./g'
 }
 build() {
-        msg $source
-        #cd ${srcdir}
-        #rm -rf SetTimeZone
-        #msg "Connecting to GIT server..."
-        #git clone ${_gitroot}
-        msg "GIT checkout done or server timeout"
+
 }
 
 package() {
-        msg "Starting package building"
         cd ${srcdir}/
         install -D -m755 ${pkgname}/src/settimezone.py ${pkgdir}/usr/bin/settimezone || return 1
         install -D -m644 ${pkgname}/COPYING ${pkgdir}/usr/share/licenses/settimezone/COPYING
