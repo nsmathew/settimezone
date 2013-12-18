@@ -70,7 +70,7 @@ class ApplicationSetTimeZone(tk.Frame):
         self.statusbar_label.grid(row=3,column=0, columnspan=3, sticky="ew" )
         
         logging.debug("Widget creation is complete")
-    
+        
     #Populate the list of available timezones dynamically. Is called only once, at startup
     def populate_list(self):
         logging.debug("Inside populate_list")
@@ -106,15 +106,18 @@ class ApplicationSetTimeZone(tk.Frame):
         changezone_cmd3=["sudo", "-k"]
         readlink_cmd="readlink "+self.LOCALTIME_PATH
         try:
-            cmd_output = Popen(changezone_cmd1, universal_newlines=True, stdin=PIPE)
+            if path.isfile(self.LOCALTIME_PATH) or path.islink(self.LOCALTIME_PATH):
+                cmd_output = Popen(changezone_cmd1, universal_newlines=True, stdin=PIPE)
+                cmd_output.communicate(input=passwd+"\n")
+                cmd_output.stdin.close()
+                if cmd_output.wait() != 0:
+                    messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd1))
+                    logging.error("COMMAND FAILED: "+' '.join(changezone_cmd1))
+                    self.update_statusbar()
+                    return
+            cmd_output = Popen(changezone_cmd2,  universal_newlines=True, stdin=PIPE)
+            #Sending password into stdin in case changezone_cmd1 was not run due to missing localtime file
             cmd_output.communicate(input=passwd+"\n")
-            cmd_output.stdin.close()
-            if cmd_output.wait() != 0:
-                messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd1))
-                logging.error("COMMAND FAILED: "+' '.join(changezone_cmd1))
-                self.update_statusbar()
-                return     
-            cmd_output = Popen(changezone_cmd2,  universal_newlines=True)
             if cmd_output.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd2))
                 logging.error("COMMAND FAILED: "+' '.join(changezone_cmd2))                
@@ -137,8 +140,11 @@ class ApplicationSetTimeZone(tk.Frame):
     #Update the status bar with latest timezone
     def update_statusbar(self):
         try:
-            cmd_output=check_output("readlink "+self.LOCALTIME_PATH, shell=True)
-            self.statusbar_label.config(text=cmd_output.decode("ascii").strip())
+            if path.islink(self.LOCALTIME_PATH):
+                cmd_output=check_output("readlink "+self.LOCALTIME_PATH, shell=True)
+                self.statusbar_label.config(text=cmd_output.decode("ascii").strip())
+            else:
+                self.statusbar_label.config(text="n/a")
         except:
             self.general_exception_handler()
     
