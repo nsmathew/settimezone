@@ -1,6 +1,6 @@
 # Maintainer: Nitin Mathew <nitn_mathew2000@hotmail.com>                                                                                             
                                                                                                                                                                                                                               
-pkgname=settimezone                                                                                                                                  
+pkgname=settimezone-git                                                                                                                                  
 pkgver=0.1                                                                                                                                 
 pkgrel=1                                                                                                                                        
 pkgdesc="Application to change the timezone in Arch Linux."                                        
@@ -11,11 +11,14 @@ license=('GPL3')
 depends=('python')
 makedepends=('git')
 install=$pkgname.install
-source=("https://github.com/nsmathew/SetTimeZone/tree/master/archive/${pkgname}_v${pkgver}.tar.gz")
-sha256sums=('fa0e4429889822f881f75f43de6a760aede41f9a259d913fdc2ad0e1f80dd5f2')
-#_gitroot="https://github.com/nsmathew/SetTimeZone.git"
-#_gitname="settimezone"
+source=("${pkgname}"::'git://github.com/nsmathew/SetTimeZone.git')
+sha256sums=('SKIP')
 msg $source
+pkgver() {
+  cd "$srcdir/$pkgname"
+  # Use the tag of the last commit
+  git describe --long | sed -E 's/([^-]*-g)/r\1/;s/-/./g'
+}
 build() {
         msg $source
         #cd ${srcdir}
@@ -28,13 +31,15 @@ build() {
 package() {
         msg "Starting package building"
         cd ${srcdir}/
-        install -D -m755 SetTimeZone/src/settimezone.py ${pkgdir}/usr/bin/settimezone || return 1
-        install -D -m644 SetTimeZone/COPYING ${pkgdir}/usr/share/licenses/settimezone/COPYING
+        msg $srcdir
+        msg $pkgdir
+        install -D -m755 ${pkgname}/src/settimezone.py ${pkgdir}/usr/bin/settimezone || return 1
+        install -D -m644 ${pkgname}/COPYING ${pkgdir}/usr/share/licenses/settimezone/COPYING
         
-        install -D -m644 SetTimeZone/resources/settimezone16x16.png ${pkgdir}/usr/share/icons/hicolor/16x16/apps/settimezone.png
-        install -D -m644 SetTimeZone/resources/settimezone22x22.png ${pkgdir}/usr/share/icons/hicolor/22x22/apps/settimezone.png
-        install -D -m644 SetTimeZone/resources/settimezone32x32.png ${pkgdir}/usr/share/icons/hicolor/32x32/apps/settimezone.png
-        install -D -m644 SetTimeZone/resources/settimezone48x48.png ${pkgdir}/usr/share/icons/hicolor/48x48/apps/settimezone.png
-        install -D -m644 SetTimeZone/resources/settimezone.desktop ${pkgdir}/usr/share/applications/settimezone.desktop
+        install -D -m644 ${pkgname}/resources/settimezone16x16.png ${pkgdir}/usr/share/icons/hicolor/16x16/apps/settimezone.png
+        install -D -m644 ${pkgname}/resources/settimezone22x22.png ${pkgdir}/usr/share/icons/hicolor/22x22/apps/settimezone.png
+        install -D -m644 ${pkgname}/resources/settimezone32x32.png ${pkgdir}/usr/share/icons/hicolor/32x32/apps/settimezone.png
+        install -D -m644 ${pkgname}/resources/settimezone48x48.png ${pkgdir}/usr/share/icons/hicolor/48x48/apps/settimezone.png
+        install -D -m644 ${pkgname}/resources/settimezone.desktop ${pkgdir}/usr/share/applications/settimezone.desktop
 }
 

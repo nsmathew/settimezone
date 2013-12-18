@@ -1,9 +1,9 @@
 [Desktop Entry]
 Version=1.0
 Name=SetTimeZone
-Comment=Access the Internet
+Comment=Set the timezone in Arch Linux
 Exec=settimezone
 Terminal=false
 Icon=settimezone
 Type=Application
-Categories=Utilities
+Categories=Utilities;
