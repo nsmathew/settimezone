@@ -15,10 +15,14 @@ Arch Linux
 
 Installation
 ------------
-Download and the PKGBUILD and settimezone-git.install file and run 'makepkg'. This will generate a package file which can be installed using 'sudo pacman -U package'
+Download the PKGBUILD and settimezone-git.install file and run 'makepkg'. This will generate a package file which can be installed using 'sudo pacman -U package'
 
 Branch
 ------
 settimezone-git
+
+AUR Link
+--------
+https://aur.archlinux.org/packages/settimezone-git/
 
 
