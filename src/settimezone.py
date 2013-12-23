@@ -85,7 +85,7 @@ class ApplicationSetTimeZone(tk.Frame):
         self.quit_butt.grid(row=3, column=0, sticky="e", padx=5,pady=2)
         
         #Button to perform ntp sync
-        self.quit_butt = tk.Button(self, text="NTP", command=self.ntp_sync, width=10)
+        self.quit_butt = tk.Button(self, text="NTP Sync", command=self.ntp_sync, width=10)
         self.quit_butt.grid(row=4, column=0, sticky="w", padx=5,pady=2)
         
         #Stausbar Label
@@ -215,8 +215,26 @@ class ApplicationSetTimeZone(tk.Frame):
         
     #Perform NTP sync
     def ntp_sync(self):
-        pass
-                
+        logging.debug("Inside ntp_sync")
+        #Request for password for running with sudo
+        passwd=simpledialog.askstring("Password","Enter root password",show="*")
+        if passwd==None or passwd=="":
+            return
+        ntpsync_cmd1=["sudo", "-S","ntpdate", "pool.ntp.org"]
+        try:
+            cmd_output = Popen(ntpsync_cmd1, universal_newlines=True, stdin=PIPE)
+            cmd_output.communicate(input=passwd+"\n")
+            cmd_output.stdin.close()
+            if cmd_output.wait() != 0:
+                messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd1))
+                logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd1))
+                self.update_statusbar()
+                return
+            else:
+                messagebox.showinfo("Executed", "NTP Date sync complete")
+        except:
+            self.general_exception_handler()
+            
     #Exit application
     def exit_app(self, event=None):
         logging.info("Exiting Application SetTimeZone")
