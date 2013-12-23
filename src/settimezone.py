@@ -84,9 +84,13 @@ class ApplicationSetTimeZone(tk.Frame):
         self.quit_butt = tk.Button(self, text="Exit", command=self.exit_app, width=10)
         self.quit_butt.grid(row=3, column=0, sticky="e", padx=5,pady=2)
         
+        #Button to perform ntp sync
+        self.quit_butt = tk.Button(self, text="NTP", command=self.ntp_sync, width=10)
+        self.quit_butt.grid(row=4, column=0, sticky="w", padx=5,pady=2)
+        
         #Stausbar Label
         self.statusbar_label=tk.Label(self, text="", bd=2, relief="ridge", anchor="w", takefocus=0)
-        self.statusbar_label.grid(row=4,column=0, columnspan=3, sticky="ew" )
+        self.statusbar_label.grid(row=5,column=0, columnspan=3, sticky="ew" )
         
         #Exit application using Escape
         root.bind('<Escape>',self.exit_app)
@@ -208,6 +212,10 @@ class ApplicationSetTimeZone(tk.Frame):
         logging.debug("Search term '%s' not found", search_str)
         messagebox.showinfo("Error", "'"+search_str+"' not found")
         self.search_entry.selection_range(0, "end")
+        
+    #Perform NTP sync
+    def ntp_sync(self):
+        pass
                 
     #Exit application
     def exit_app(self, event=None):
@@ -227,7 +235,7 @@ if len(sys.argv) == 2 and sys.argv[1]=="--log":
 logging.info("Application SetTimeZone has started")
 root = tk.Tk()
 root.title("Set Time Zone")
-root.geometry('245x382+300+180')
+root.geometry('245x415+300+180')
 root.resizable(0,0)
 app = ApplicationSetTimeZone(master=root)
 app.mainloop()
