@@ -77,16 +77,16 @@ class ApplicationSetTimeZone(tk.Frame):
         self.search_entry.bind('<Return>', self.search_zone)
             
         #Button which will enable the change zone
-        self.change_zone_butt = tk.Button(self, text="Change Zone", command=self.change_timezone, width=10)
+        self.change_zone_butt = tk.Button(self, text="Change\nZone", command=self.change_timezone, width=5, height=2)
         self.change_zone_butt.grid(row=3, column=0, sticky="w", padx=5,pady=2)
         
-        #Button which will enable exit
-        self.quit_butt = tk.Button(self, text="Exit", command=self.exit_app, width=10)
-        self.quit_butt.grid(row=3, column=0, sticky="e", padx=5,pady=2)
-        
         #Button to perform ntp sync
-        self.quit_butt = tk.Button(self, text="NTP Sync", command=self.ntp_sync, width=10)
-        self.quit_butt.grid(row=4, column=0, sticky="w", padx=5,pady=2)
+        self.quit_butt = tk.Button(self, text="NTP\nSync", command=self.ntp_sync, width=5, height=2)
+        self.quit_butt.grid(row=3, column=0,  padx=5,pady=2)
+        
+        #Button which will enable exit
+        self.quit_butt = tk.Button(self, text="Exit", command=self.exit_app, width=5, height=2)
+        self.quit_butt.grid(row=3, column=0, sticky="e", padx=5,pady=2)
         
         #Stausbar Label
         self.statusbar_label=tk.Label(self, text="", bd=2, relief="ridge", anchor="w", takefocus=0)
@@ -216,22 +216,47 @@ class ApplicationSetTimeZone(tk.Frame):
     #Perform NTP sync
     def ntp_sync(self):
         logging.debug("Inside ntp_sync")
+        #check if ntpd service is running, if running inform user and do nothing further
+        service_chk_cmd="systemctl is-active ntpd.service"
+        try:
+            cmd_output=check_output(service_chk_cmd, shell=True)
+            if cmd_output.decode("ascii").strip() == "active":
+                    messagebox.showinfo("Info", "ntpd service is running, please stop it and then try again.")
+                    logging.error("ntpd service is running, will not perform one time sync")
+                    self.update_statusbar()
+                    return
+        except:
+            #Assume the command failed due service not running/disabled/not available and proceed with one time sync
+            pass
         #Request for password for running with sudo
         passwd=simpledialog.askstring("Password","Enter root password",show="*")
         if passwd==None or passwd=="":
             return
-        ntpsync_cmd1=["sudo", "-S","ntpdate", "pool.ntp.org"]
+        #Sycn with ntp time, set the hwclock to the system time and clear the sudo cached credentials
+        ntpsync_cmd1=["sudo", "-S","ntpd", "-q"]
+        ntpsync_cmd2=["sudo", "-S","hwclock", "-w"]
+        ntpsync_cmd3=["sudo", "-k"]
         try:
             cmd_output = Popen(ntpsync_cmd1, universal_newlines=True, stdin=PIPE)
             cmd_output.communicate(input=passwd+"\n")
-            cmd_output.stdin.close()
             if cmd_output.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd1))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd1))
                 self.update_statusbar()
                 return
-            else:
-                messagebox.showinfo("Executed", "NTP Date sync complete")
+            cmd_output1 = Popen(ntpsync_cmd2,  universal_newlines=True, stdin=PIPE)
+            if cmd_output.wait() != 0:
+                messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd2))
+                logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd2))
+                self.update_statusbar()
+                return
+            cmd_output = Popen(ntpsync_cmd3,  universal_newlines=True)
+            if cmd_output.wait() != 0:
+                messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd3))
+                logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd3))
+                self.update_statusbar()
+                return
+            messagebox.showinfo("Executed", "NTP Date sync complete")
         except:
             self.general_exception_handler()
             
@@ -253,7 +278,7 @@ if len(sys.argv) == 2 and sys.argv[1]=="--log":
 logging.info("Application SetTimeZone has started")
 root = tk.Tk()
 root.title("Set Time Zone")
-root.geometry('245x415+300+180')
+root.geometry('245x400+300+180')
 root.resizable(0,0)
 app = ApplicationSetTimeZone(master=root)
 app.mainloop()
