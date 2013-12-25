@@ -45,7 +45,7 @@ class ApplicationSetTimeZone(tk.Frame):
         self.grid()
         self.create_widgets()
         self.populate_list()
-        self.update_statusbar()
+        self.update_statusbar("show_link")
     
     #Create widgets     
     def create_widgets(self):
@@ -112,6 +112,7 @@ class ApplicationSetTimeZone(tk.Frame):
     #Contains the logic to change the timezone based on what user has selected
     def change_timezone(self):
         logging.debug("Inside change_timezone")
+        self.update_statusbar("Changing Timezone...")
         if not self.zoneinfo_list.curselection():
             messagebox.showinfo("Error","Please select a timezone")
             return
@@ -140,7 +141,7 @@ class ApplicationSetTimeZone(tk.Frame):
                 if stz_process.wait() != 0:
                     messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd1))
                     logging.error("COMMAND FAILED: "+' '.join(changezone_cmd1))
-                    self.update_statusbar()
+                    self.update_statusbar("show_link")
                     return
             stz_process = Popen(changezone_cmd2,  universal_newlines=True, stdin=PIPE)
             #Sending password into stdin in case changezone_cmd1 was not run due to missing localtime file
@@ -148,30 +149,33 @@ class ApplicationSetTimeZone(tk.Frame):
             if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd2))
                 logging.error("COMMAND FAILED: "+' '.join(changezone_cmd2))                
-                self.update_statusbar()
+                self.update_statusbar("show_link")
                 return      
             stz_process = Popen(changezone_cmd3,  universal_newlines=True)
             if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd3))
                 logging.error("COMMAND FAILED: "+' '.join(changezone_cmd3))
-                self.update_statusbar()
+                self.update_statusbar("show_link")
                 return            
             
             cmd_output=check_output(readlink_cmd, shell=True)
             logging.debug("Changed timezone to %s",cmd_output)
-            self.update_statusbar()
+            self.update_statusbar("show_link")
             messagebox.showinfo("Executed", self.LOCALTIME_PATH+" -> "+cmd_output.decode("ascii").strip())
         except:
             self.general_exception_handler()
             
     #Update the status bar with latest timezone
-    def update_statusbar(self):
+    def update_statusbar(self,message):
         try:
-            if path.islink(self.LOCALTIME_PATH):
-                cmd_output=check_output("readlink "+self.LOCALTIME_PATH, shell=True)
-                self.statusbar_label.config(text=cmd_output.decode("ascii").strip())
+            if message == "show_link":    
+                if path.islink(self.LOCALTIME_PATH):
+                    cmd_output=check_output("readlink "+self.LOCALTIME_PATH, shell=True)
+                    self.statusbar_label.config(text=cmd_output.decode("ascii").strip())
+                else:
+                    self.statusbar_label.config(text="n/a")
             else:
-                self.statusbar_label.config(text="n/a")
+                self.statusbar_label.config(text=message)     
         except:
             self.general_exception_handler()
     
@@ -208,6 +212,7 @@ class ApplicationSetTimeZone(tk.Frame):
     #Perform NTP sync
     def ntp_sync(self):
         logging.debug("Inside ntp_sync")
+        self.update_statusbar("Performing NTP sync...")
         #check if ntpd service is running, if running inform user and do nothing further
         service_chk_cmd="systemctl is-active ntpd.service"
         try:
@@ -215,7 +220,7 @@ class ApplicationSetTimeZone(tk.Frame):
             if cmd_output.decode("ascii").strip() == "active":
                     messagebox.showinfo("Info", "ntpd service is running, please stop it and then try again.")
                     logging.error("ntpd service is running, will not perform one time sync")
-                    self.update_statusbar()
+                    self.update_statusbar("show_link")
                     return
         except:
             #Assume the command failed due service not running/disabled/not available and proceed with one time sync
@@ -234,19 +239,19 @@ class ApplicationSetTimeZone(tk.Frame):
             if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd1))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd1))
-                self.update_statusbar()
+                self.update_statusbar("show_link")
                 return
             stz_process = Popen(ntpsync_cmd2,  universal_newlines=True, stdin=PIPE)
             if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd2))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd2))
-                self.update_statusbar()
+                self.update_statusbar("show_link")
                 return
             stz_process = Popen(ntpsync_cmd3,  universal_newlines=True)
             if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd3))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd3))
-                self.update_statusbar()
+                self.update_statusbar("show_link")
                 return
             messagebox.showinfo("Executed", "NTP Date sync complete")
         except:
