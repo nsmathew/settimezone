@@ -90,7 +90,7 @@ class ApplicationSetTimeZone(tk.Frame):
         
         #Stausbar Label
         self.statusbar_label=tk.Label(self, text="", bd=2, relief="ridge", anchor="w", takefocus=0)
-        self.statusbar_label.grid(row=5,column=0, columnspan=3, sticky="ew" )
+        self.statusbar_label.grid(row=4,column=0, columnspan=3, sticky="ew",padx=5,pady=2 )
         
         #Exit application using Escape
         root.bind('<Escape>',self.exit_app)
@@ -142,36 +142,36 @@ class ApplicationSetTimeZone(tk.Frame):
         readlink_cmd="readlink "+self.LOCALTIME_PATH
         try:
             if path.isfile(self.LOCALTIME_PATH) or path.islink(self.LOCALTIME_PATH):
-                cmd_output = Popen(changezone_cmd1, universal_newlines=True, stdin=PIPE)
-                cmd_output.communicate(input=passwd+"\n")
-                cmd_output.stdin.close()
-                if cmd_output.wait() != 0:
+                stz_process = Popen(changezone_cmd1, universal_newlines=True, stdin=PIPE)
+                stz_process.communicate(input=passwd+"\n")
+                stz_process.stdin.close()
+                if stz_process.wait() != 0:
                     messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd1))
                     logging.error("COMMAND FAILED: "+' '.join(changezone_cmd1))
                     self.update_statusbar()
                     return
-            cmd_output = Popen(changezone_cmd2,  universal_newlines=True, stdin=PIPE)
+            stz_process = Popen(changezone_cmd2,  universal_newlines=True, stdin=PIPE)
             #Sending password into stdin in case changezone_cmd1 was not run due to missing localtime file
-            cmd_output.communicate(input=passwd+"\n")
-            if cmd_output.wait() != 0:
+            stz_process.communicate(input=passwd+"\n")
+            if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd2))
                 logging.error("COMMAND FAILED: "+' '.join(changezone_cmd2))                
                 self.update_statusbar()
                 return      
-            cmd_output = Popen(changezone_cmd3,  universal_newlines=True)
-            if cmd_output.wait() != 0:
+            stz_process = Popen(changezone_cmd3,  universal_newlines=True)
+            if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd3))
                 logging.error("COMMAND FAILED: "+' '.join(changezone_cmd3))
                 self.update_statusbar()
                 return            
             
-            cmd_output2=check_output(readlink_cmd, shell=True)
-            logging.debug("Changed timezone to %s",cmd_output2)
+            cmd_output=check_output(readlink_cmd, shell=True)
+            logging.debug("Changed timezone to %s",cmd_output)
             self.update_statusbar()
-            messagebox.showinfo("Executed", self.LOCALTIME_PATH+" -> "+cmd_output2.decode("ascii").strip())
+            messagebox.showinfo("Executed", self.LOCALTIME_PATH+" -> "+cmd_output.decode("ascii").strip())
         except:
             self.general_exception_handler()
-    
+            
     #Update the status bar with latest timezone
     def update_statusbar(self):
         try:
@@ -212,7 +212,7 @@ class ApplicationSetTimeZone(tk.Frame):
         logging.debug("Search term '%s' not found", search_str)
         messagebox.showinfo("Error", "'"+search_str+"' not found")
         self.search_entry.selection_range(0, "end")
-        
+    
     #Perform NTP sync
     def ntp_sync(self):
         logging.debug("Inside ntp_sync")
@@ -237,21 +237,21 @@ class ApplicationSetTimeZone(tk.Frame):
         ntpsync_cmd2=["sudo", "-S","hwclock", "-w"]
         ntpsync_cmd3=["sudo", "-k"]
         try:
-            cmd_output = Popen(ntpsync_cmd1, universal_newlines=True, stdin=PIPE)
-            cmd_output.communicate(input=passwd+"\n")
-            if cmd_output.wait() != 0:
+            stz_process = Popen(ntpsync_cmd1, universal_newlines=True, stdin=PIPE)
+            stz_process.communicate(input=passwd+"\n")
+            if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd1))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd1))
                 self.update_statusbar()
                 return
-            cmd_output1 = Popen(ntpsync_cmd2,  universal_newlines=True, stdin=PIPE)
-            if cmd_output.wait() != 0:
+            stz_process = Popen(ntpsync_cmd2,  universal_newlines=True, stdin=PIPE)
+            if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd2))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd2))
                 self.update_statusbar()
                 return
-            cmd_output = Popen(ntpsync_cmd3,  universal_newlines=True)
-            if cmd_output.wait() != 0:
+            stz_process = Popen(ntpsync_cmd3,  universal_newlines=True)
+            if stz_process.wait() != 0:
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd3))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd3))
                 self.update_statusbar()
