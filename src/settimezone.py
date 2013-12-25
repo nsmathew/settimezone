@@ -267,7 +267,6 @@ class ApplicationSetTimeZone(tk.Frame):
     
     #Handle exceptions    
     def general_exception_handler(self):
-        self.update_statusbar()
         logging.error('Caught Exception:', exc_info=True)
         messagebox.showinfo("Error", sys.exc_info()[1])
         
