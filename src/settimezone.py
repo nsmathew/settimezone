@@ -30,8 +30,6 @@ class ApplicationSetTimeZone(tk.Frame):
     LOCALTIME_PATH="/etc/localtime"
     #List of zones
     zonelist=None
-    #list index for searching
-    search_list_index=None
     #Declare widgets
     statusbar_label=None
     info_label=None
@@ -58,9 +56,8 @@ class ApplicationSetTimeZone(tk.Frame):
         self.info_label.grid(row=0,column=0, columnspan=2, sticky="ew")
         
         #Timezone list
-        self.zoneinfo_list = tk.Listbox(self, selectmode="single", height=15, width=30)
+        self.zoneinfo_list = tk.Listbox(self, selectmode="single", height=15, width=30, exportselection=0)
         self.zoneinfo_list.grid(row=1, column=0, padx=5)
-        self.zoneinfo_list.bind('<<ListboxSelect>>',self.list_item_selected)
         
         #Scrollbar for timezone list 
         self.y_scrollbar_zoneinfo_list = tk.Scrollbar(self,command=self.zoneinfo_list.yview, orient="vertical", takefocus=0)
@@ -109,13 +106,8 @@ class ApplicationSetTimeZone(tk.Frame):
             for zone in self.zonelist:
                 self.zoneinfo_list.insert("end", zone)
             self.zoneinfo_list.selection_set(first=0)
-            self.zoneinfo_list.event_generate('<<ListboxSelect>>')
         except:    
              self.general_exception_handler()
-    
-    #Update index used by search tool when selection is changed
-    def list_item_selected(self, event):
-        self.search_list_index=self.zoneinfo_list.curselection()[0]
         
     #Contains the logic to change the timezone based on what user has selected
     def change_timezone(self):
@@ -183,30 +175,30 @@ class ApplicationSetTimeZone(tk.Frame):
         except:
             self.general_exception_handler()
     
-    #Search for timezones. Current searched position is kept track using an index.
-    #This is incremented when a successful search happens.
+    #Search for timezones. Current searched position is kept track using an index. It starts from the current selection+1 and will 
+    #always be 1 ahead of the current searched position
     #If nothing is found then start from 0 and do one more run if search started from a non-zero position
     def search_zone(self, event):
         search_str=self.search_entry.get()
         if search_str=="":
             return
-        for item in self.zonelist[self.search_list_index:]:
+        #Start search from next index of current selection
+        search_list_index=self.zoneinfo_list.curselection()[0]+1
+        for item in self.zonelist[search_list_index:]:
+            search_list_index=search_list_index+1
             if search_str.upper() in item.upper():
                 self.zoneinfo_list.selection_clear(0,"end")
                 self.zoneinfo_list.selection_set(first=self.zonelist.index(item))
                 self.zoneinfo_list.see(self.zonelist.index(item))
-                self.zoneinfo_list.event_generate('<<ListboxSelect>>')
-                self.search_list_index=self.search_list_index+1
                 logging.debug("Search term '%s' found", search_str)
                 return
-        self.search_list_index=0
-        for item in self.zonelist[self.search_list_index:]:
+        search_list_index=0
+        for item in self.zonelist[search_list_index:]:
+            search_list_index=search_list_index+1
             if search_str.upper() in item.upper():
                 self.zoneinfo_list.selection_clear(0,self.zoneinfo_list.size())
                 self.zoneinfo_list.selection_set(first=self.zonelist.index(item))
                 self.zoneinfo_list.see(self.zonelist.index(item))
-                self.zoneinfo_list.event_generate('<<ListboxSelect>>')
-                self.search_list_index=self.search_list_index+1
                 logging.debug("Search term '%s' found(restart section)", search_str)
                 return
         logging.debug("Search term '%s' not found", search_str)
