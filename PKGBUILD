@@ -12,7 +12,7 @@ depends=('python')
 makedepends=()
 install=$pkgname.install
 source=(https://www.dropbox.com/s/jmx7ti70w6u14l7/${pkgname}_v${pkgver}.tar.gz ${pkgname}.install)
-sha256sums=('e13d85d619bb808895c28378e1c0ecd9095a985de96b7fdbde8b5bdc4f4cbd16' 'ee78ee83a9e52b3735e42e1a422a633303253d8dcaf998f54f53b8f4e00b1835')
+sha256sums=('e15cc3eb07b5f04d9f5956d7d8f9af87d8bae629a1b8ad9134f04aa29c8e8985' 'ee78ee83a9e52b3735e42e1a422a633303253d8dcaf998f54f53b8f4e00b1835')
 pkgver() {
   msg "Nothing to do"
 }
