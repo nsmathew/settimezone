@@ -101,7 +101,7 @@ class ApplicationSetTimeZone(tk.Frame):
     def populate_list(self):
         logging.debug("Inside populate_list")
         #Command to extract the list of time zones available in /usr/share/zoneinfo
-        zonelist_cmd="(cd /usr/share/zoneinfo && find . | sort | sed 's/\.\///g' | grep -Ev 'right|posix' | grep 'Africa\|America\|Antarctica\|Arctic\|Asia\|Atlantic\|Australia\|Brazil\|Canada\|Chile\|Europe\|Indian\|Mexico\|Mideast\|Pacific\|US' | grep '\/')"
+        zonelist_cmd="(cd /usr/share/zoneinfo && find . -mindepth 2 -type f | sort | sed 's/\.\///g' | grep -Ev 'posix|right')"
         try:
             self.zonelist=check_output(zonelist_cmd, shell=True).decode('ascii').strip().split()
             #Populate the list with timezones
