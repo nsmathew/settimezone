@@ -5,8 +5,7 @@
         <data xmlns="http://nbpython.dev.java.net/ns/php-project/1">
             <name>SetTimeZone</name>
             <sources>
-                <root id="src.dir" name="src"/>
-                <root id="src.dir" name="src"/>
+                <root id="src.sources.dir"/>
             </sources>
             <tests/>
         </data>

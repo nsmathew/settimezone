@@ -23,6 +23,7 @@ from subprocess import check_output, PIPE, Popen
 import sys
 import logging
 from os import path
+import time
 class ApplicationSetTimeZone(tk.Frame):
     
     #Declare paths
@@ -112,22 +113,13 @@ class ApplicationSetTimeZone(tk.Frame):
     #Contains the logic to change the timezone based on what user has selected
     def change_timezone(self):
         logging.debug("Inside change_timezone")
-        self.update_statusbar("Changing Timezone...")
-        if not self.zoneinfo_list.curselection():
-            messagebox.showinfo("Error","Please select a timezone")
-            return
-        
         selected_zone=self.zoneinfo_list.get(self.zoneinfo_list.curselection())
         logging.debug("Selected Zone: %s", selected_zone)
-        #If selected timezone does not exist then dont do anything further
-        if not path.isfile(self.ZONEINFO_PATH+selected_zone):
-            logging.error(self.ZONEINFO_PATH+selected_zone+" does not exist")
-            messagebox.showinfo("Error",self.ZONEINFO_PATH+selected_zone+" does not exist")
-            return
         #Request for password for running with sudo
         passwd=simpledialog.askstring("Password","Enter root password",show="*")
         if passwd==None or passwd=="":
             return
+        self.update_statusbar("Changing Timezone...")
         #Remove current symbolic link and create new with the selected timezone. Clear sudo cached credentials at the end.
         changezone_cmd1=["sudo", "-S", "rm", self.LOCALTIME_PATH]
         changezone_cmd2=["sudo", "-S", "ln", "-s", self.ZONEINFO_PATH+selected_zone, self.LOCALTIME_PATH]
@@ -139,23 +131,23 @@ class ApplicationSetTimeZone(tk.Frame):
                 stz_process.communicate(input=passwd+"\n")
                 stz_process.stdin.close()
                 if stz_process.wait() != 0:
+                    self.update_statusbar("show_link")                    
                     messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd1))
                     logging.error("COMMAND FAILED: "+' '.join(changezone_cmd1))
-                    self.update_statusbar("show_link")
                     return
             stz_process = Popen(changezone_cmd2,  universal_newlines=True, stdin=PIPE)
             #Sending password into stdin in case changezone_cmd1 was not run due to missing localtime file
             stz_process.communicate(input=passwd+"\n")
             if stz_process.wait() != 0:
+                self.update_statusbar("show_link")
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd2))
                 logging.error("COMMAND FAILED: "+' '.join(changezone_cmd2))                
-                self.update_statusbar("show_link")
                 return      
             stz_process = Popen(changezone_cmd3,  universal_newlines=True)
             if stz_process.wait() != 0:
+                self.update_statusbar("show_link")
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(changezone_cmd3))
                 logging.error("COMMAND FAILED: "+' '.join(changezone_cmd3))
-                self.update_statusbar("show_link")
                 return            
             
             cmd_output=check_output(readlink_cmd, shell=True)
@@ -175,7 +167,8 @@ class ApplicationSetTimeZone(tk.Frame):
                 else:
                     self.statusbar_label.config(text="n/a")
             else:
-                self.statusbar_label.config(text=message)     
+                self.statusbar_label.config(text=message)
+            root.update()#Added since in certain cases a call is made right after simpledialog the label text is not updated on screen
         except:
             self.general_exception_handler()
     
@@ -212,7 +205,7 @@ class ApplicationSetTimeZone(tk.Frame):
     #Perform NTP sync
     def ntp_sync(self):
         logging.debug("Inside ntp_sync")
-        self.update_statusbar("Performing NTP sync...")
+        self.update_statusbar("Checking for ntpd service...")
         #check if ntpd service is running, if running inform user and do nothing further
         service_chk_cmd="systemctl is-active ntpd.service"
         try:
@@ -225,10 +218,13 @@ class ApplicationSetTimeZone(tk.Frame):
         except:
             #Assume the command failed due service not running/disabled/not available and proceed with one time sync
             pass
+        self.update_statusbar("show_link")
         #Request for password for running with sudo
         passwd=simpledialog.askstring("Password","Enter root password",show="*")
         if passwd==None or passwd=="":
+            self.update_statusbar("show_link")
             return
+        self.update_statusbar("Performing NTP Sync...")    
         #Sycn with ntp time, set the hwclock to the system time and clear the sudo cached credentials
         ntpsync_cmd1=["sudo", "-S","ntpd", "-q"]
         ntpsync_cmd2=["sudo", "-S","hwclock", "-w"]
@@ -237,22 +233,23 @@ class ApplicationSetTimeZone(tk.Frame):
             stz_process = Popen(ntpsync_cmd1, universal_newlines=True, stdin=PIPE)
             stz_process.communicate(input=passwd+"\n")
             if stz_process.wait() != 0:
+                self.update_statusbar("show_link")
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd1))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd1))
-                self.update_statusbar("show_link")
                 return
             stz_process = Popen(ntpsync_cmd2,  universal_newlines=True, stdin=PIPE)
             if stz_process.wait() != 0:
+                self.update_statusbar("show_link")
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd2))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd2))
-                self.update_statusbar("show_link")
                 return
             stz_process = Popen(ntpsync_cmd3,  universal_newlines=True)
             if stz_process.wait() != 0:
+                self.update_statusbar("show_link")
                 messagebox.showinfo("Error", "COMMAND FAILED: "+' '.join(ntpsync_cmd3))
                 logging.error("COMMAND FAILED: "+' '.join(ntpsync_cmd3))
-                self.update_statusbar("show_link")
                 return
+            self.update_statusbar("show_link")
             messagebox.showinfo("Executed", "NTP Date sync complete")
         except:
             self.general_exception_handler()
