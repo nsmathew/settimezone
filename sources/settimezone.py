@@ -67,11 +67,11 @@ class ApplicationSetTimeZone(tk.Frame):
         
         #Search label
         self.search_label=tk.Label(self,text="Search:", anchor="w", width=7,takefocus=0)
-        self.search_label.grid(row=2, column=0, sticky="w",pady=1)
+        self.search_label.grid(row=2, column=0, sticky="w",pady=1, padx=4)
         
         #Search text box
-        self.search_entry=tk.Entry(self, text="search", bg="white", width=24)
-        self.search_entry.grid(row=2, column=0,sticky='e',pady=1)
+        self.search_entry=tk.Entry(self, text="search", bg="white", width=22)
+        self.search_entry.grid(row=2, column=0,sticky='e',pady=1,padx=5)
         self.search_entry.bind('<Return>', self.search_zone)
             
         #Button which will enable the change zone
@@ -88,7 +88,7 @@ class ApplicationSetTimeZone(tk.Frame):
         
         #Stausbar Label
         self.statusbar_label=tk.Label(self, text="", bd=2, relief="ridge", anchor="w", takefocus=0)
-        self.statusbar_label.grid(row=4,column=0, columnspan=3, sticky="ew",padx=5,pady=2 )
+        self.statusbar_label.grid(row=4,column=0, sticky="we",padx=5,pady=2 )
         
         #Exit application using Escape
         root.bind('<Escape>',self.exit_app)
@@ -116,7 +116,7 @@ class ApplicationSetTimeZone(tk.Frame):
         selected_zone=self.zoneinfo_list.get(self.zoneinfo_list.curselection())
         logging.debug("Selected Zone: %s", selected_zone)
         #Request for password for running with sudo
-        passwd=simpledialog.askstring("Password","Enter root password",show="*")
+        passwd=simpledialog.askstring("Password","Enter sudo password",show="*")
         if passwd==None or passwd=="":
             return
         self.update_statusbar("Changing Timezone...")
@@ -220,7 +220,7 @@ class ApplicationSetTimeZone(tk.Frame):
             pass
         self.update_statusbar("show_link")
         #Request for password for running with sudo
-        passwd=simpledialog.askstring("Password","Enter root password",show="*")
+        passwd=simpledialog.askstring("Password","Enter sudo password",show="*")
         if passwd==None or passwd=="":
             self.update_statusbar("show_link")
             return
@@ -271,7 +271,7 @@ if len(sys.argv) == 2 and sys.argv[1]=="--log":
 logging.info("Application SetTimeZone has started")
 root = tk.Tk()
 root.title("Set Time Zone")
-root.geometry('245x400+300+180')
+root.geometry('255x350+300+180')
 root.resizable(0,0)
 app = ApplicationSetTimeZone(master=root)
 app.mainloop()
